@@ -8,22 +8,23 @@ const Square = ({ value, onSquareClick }) => {
 };
 
 export default function Game() {
-  const [xIsNext, setXIsNext] = useState(true);
   const [history, setHistory] = useState([Array(9).fill(null)]);
-  // const currentSquares = history[history.length - 1];
-  const [currentSquares, setCurrentSquares] = useState(
-    history[history.length - 1]
-  );
+  const [currentMove, setCurrentMove] = useState(0);
+  const currentSquares = history[currentMove];
+  const xIsNext = currentMove % 2 === 0;
   const handlePlay = (nextSquares) => {
-    setHistory([...history, nextSquares]);
-    setCurrentSquares(nextSquares);
-    setXIsNext(!xIsNext);
+    const nextHistory = [...history.slice(0, currentMove + 1), nextSquares];
+    setHistory(nextHistory);
+    setCurrentMove(nextHistory.length - 1);
+    // setXIsNext(!xIsNext);
   };
 
-  const jumpTo = (move) => {
-    setCurrentSquares(history[move]);
+  const jumpTo = (nextMove) => {
+    setCurrentMove(nextMove);
+    // setXIsNext(nextMove % 2 === 0);
   };
   const moves = history.map((squares, move) => {
+    console.log(move);
     let description;
     if (move > 0) {
       description = `Go to move #${move}`;
