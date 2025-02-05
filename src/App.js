@@ -19,6 +19,9 @@ export default function Game() {
   };
 
   const jumpTo = (nextMove) => {
+    if (nextMove === 0) {
+      setHistory([Array(9).fill(null)]);
+    }
     setCurrentMove(nextMove);
   };
   const moves = history.map((squares, move) => {
