@@ -103,18 +103,57 @@ function Board({ xIsNext, squares, onPlay }) {
 }
 
 const calculateWinner = (squares) => {
-  const userWinningLinesCombinations = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    [0, 4, 8],
-    [2, 4, 6],
-  ];
+  // const userWinningLinesCombinations = [
+  //   [0, 1, 2],
+  //   [3, 4, 5],
+  //   [6, 7, 8],
+  //   [0, 3, 6],
+  //   [1, 4, 7],
+  //   [2, 5, 8],
+  //   [0, 4, 8],
+  //   [2, 4, 6],
+  // ];
+  let n = 3;
+  const generateWinningCombinations = () => {
+    let winningLines = [],
+      diagonalRightToLeft = [],
+      diagonalLeftToRight = [],
+      leftToRight = [],
+      topToBottom = [];
+    for (let i = 1; i <= n; i++) {
+      diagonalLeftToRight?.push(n * (i - 1) + i);
+      diagonalRightToLeft?.push(i * n - (i - 1));
+      for (let j = 0; j < n; j++) {
+        if (!Array.isArray(topToBottom[i - 1])) {
+          topToBottom[i - 1] = new Array();
+        }
+        topToBottom[i - 1].push(1 + n * j + (i - 1));
+        if (!Array.isArray(leftToRight[i - 1])) {
+          leftToRight[i - 1] = new Array();
+        }
+        leftToRight[i - 1].push(1 + j + n * (i - 1));
+      }
+    }
+    winningLines = [
+      ...leftToRight,
+      ...topToBottom,
+      diagonalLeftToRight,
+      diagonalRightToLeft,
+    ];
+    return winningLines;
+  };
+  let userWinningLinesCombinations = generateWinningCombinations();
+  console.log("userWinningLinesCombinations", userWinningLinesCombinations);
+  let arrayOfLetters = [];
+  // const getLetter(number)
+  for (let i = 1; i <= n; i++) {
+    arrayOfLetters.push(String.fromCharCode(96 + i));
+  }
+  console.log(arrayOfLetters);
+
   for (let i = 0; i < userWinningLinesCombinations.length; i++) {
     const [a, b, c] = userWinningLinesCombinations[i];
+
     if (
       squares &&
       squares[a] &&
