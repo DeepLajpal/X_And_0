@@ -12,6 +12,8 @@ export default function Game() {
   const [currentMove, setCurrentMove] = useState(0);
   const currentSquares = history[currentMove];
   const xIsNext = currentMove % 2 === 0;
+  let n = 3;
+
   const handlePlay = (nextSquares) => {
     const nextHistory = [...history.slice(0, currentMove + 1), nextSquares];
     setHistory(nextHistory);
@@ -44,7 +46,12 @@ export default function Game() {
   return (
     <div className="game">
       <div className="game-board">
-        <Board xIsNext={xIsNext} squares={currentSquares} onPlay={handlePlay} />
+        <Board
+          xIsNext={xIsNext}
+          n={n}
+          squares={currentSquares}
+          onPlay={handlePlay}
+        />
       </div>
       <div className="game-info">
         <ol>{moves}</ol>
@@ -53,9 +60,9 @@ export default function Game() {
   );
 }
 
-function Board({ xIsNext, squares, onPlay }) {
-  const numberOfSquares = 5;
-  let winner = calculateWinner(squares);
+function Board({ xIsNext, squares, onPlay, n }) {
+  const numberOfSquares = n;
+  let winner = calculateWinner(squares, n);
   let WINNER_STATUS = false;
   if (winner === "X" || winner === "0") {
     WINNER_STATUS = `Winner is: ${winner}`;
@@ -64,7 +71,7 @@ function Board({ xIsNext, squares, onPlay }) {
   }
   const handleClick = (i) => {
     const nextSquares = squares.slice();
-    if (nextSquares[i] || calculateWinner(squares)) {
+    if (nextSquares[i] || calculateWinner(squares, n)) {
       return;
     }
     if (xIsNext) {
@@ -102,36 +109,21 @@ function Board({ xIsNext, squares, onPlay }) {
   );
 }
 
-const calculateWinner = (squares) => {
-  // const userWinningLinesCombinations = [
-  //   [0, 1, 2],
-  //   [3, 4, 5],
-  //   [6, 7, 8],
-  //   [0, 3, 6],
-  //   [1, 4, 7],
-  //   [2, 5, 8],
-  //   [0, 4, 8],
-  //   [2, 4, 6],
-  // ];
-  let n = 3;
+const calculateWinner = (squares, n) => {
   const generateWinningCombinations = () => {
     let winningLines = [],
       diagonalRightToLeft = [],
       diagonalLeftToRight = [],
       leftToRight = [],
       topToBottom = [];
-    for (let i = 1; i <= n; i++) {
-      diagonalLeftToRight?.push(n * (i - 1) + i);
-      diagonalRightToLeft?.push(i * n - (i - 1));
+    for (let i = 0; i < n; i++) {
+      diagonalLeftToRight.push(i * n + i);
+      diagonalRightToLeft.push((i + 1) * n - (i + 1));
+      leftToRight.push([]);
+      topToBottom.push([]);
       for (let j = 0; j < n; j++) {
-        if (!Array.isArray(topToBottom[i - 1])) {
-          topToBottom[i - 1] = new Array();
-        }
-        topToBottom[i - 1].push(1 + n * j + (i - 1));
-        if (!Array.isArray(leftToRight[i - 1])) {
-          leftToRight[i - 1] = new Array();
-        }
-        leftToRight[i - 1].push(1 + j + n * (i - 1));
+        leftToRight[i].push(i * n + j);
+        topToBottom[i].push(j * n + i);
       }
     }
     winningLines = [
@@ -142,23 +134,16 @@ const calculateWinner = (squares) => {
     ];
     return winningLines;
   };
+
   let userWinningLinesCombinations = generateWinningCombinations();
-  console.log("userWinningLinesCombinations", userWinningLinesCombinations);
-  let arrayOfLetters = [];
-  // const getLetter(number)
-  for (let i = 1; i <= n; i++) {
-    arrayOfLetters.push(String.fromCharCode(96 + i));
-  }
-  console.log(arrayOfLetters);
 
   for (let i = 0; i < userWinningLinesCombinations.length; i++) {
-    const [a, b, c] = userWinningLinesCombinations[i];
-
+    const [a, b, c, ...rest] = userWinningLinesCombinations[i];
     if (
-      squares &&
       squares[a] &&
       squares[a] === squares[b] &&
-      squares[a] === squares[c]
+      squares[a] === squares[c] &&
+      rest.every((index) => squares[a] === squares[index])
     ) {
       return squares[a];
     }
