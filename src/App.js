@@ -11,8 +11,9 @@ export default function Game() {
   const [history, setHistory] = useState([Array(9).fill(null)]);
   const [currentMove, setCurrentMove] = useState(0);
   const currentSquares = history[currentMove];
+  const [squaresInputValue, setSquaresInputValue] = useState(null);
   const xIsNext = currentMove % 2 === 0;
-  let n = 3;
+  const [n, setN] = useState(3);
 
   const handlePlay = (nextSquares) => {
     const nextHistory = [...history.slice(0, currentMove + 1), nextSquares];
@@ -43,6 +44,30 @@ export default function Game() {
       </li>
     );
   });
+  const handleOnKeyDown = (e) => {
+    if (Number(e.target.value) < 0) {
+      return;
+    }
+    if (e.key === "Enter") {
+      console.log("User Pressed Enter");
+      setN(Number(e.target.value));
+    }
+  };
+  const handleNoOfSquareUpdateBtn = (squaresInputValue) => {
+    if (squaresInputValue < 0) {
+      return;
+    }
+    console.log("User Clicked Update Btn");
+    setN(squaresInputValue);
+  };
+
+  const handleOnChange = (e) => {
+    if (Number(e.target.value) < 0) {
+      return;
+    }
+    setSquaresInputValue(Number(e.target.value));
+    setN(Number(e.target.value));
+  };
   return (
     <div className="game">
       <div className="game-board">
@@ -55,6 +80,20 @@ export default function Game() {
       </div>
       <div className="game-info">
         <ol>{moves}</ol>
+      </div>
+      <div className="game-info">
+        <label>Update number of squares</label>
+        <input
+          type="number"
+          onChange={(e) => handleOnChange(e)}
+          onKeyDown={(e) => handleOnKeyDown(e)}
+        />
+        <button
+          type="submit"
+          onClick={(e) => handleNoOfSquareUpdateBtn(squaresInputValue)}
+        >
+          Update
+        </button>
       </div>
     </div>
   );
@@ -85,26 +124,27 @@ function Board({ xIsNext, squares, onPlay, n }) {
   return (
     <>
       <div className="status">{WINNER_STATUS ? WINNER_STATUS : null}</div>
-      {Array(numberOfSquares)
-        .fill(null)
-        .map((_, rowIndex) => {
-          return (
-            <div key={rowIndex} className="board-row">
-              {Array(numberOfSquares)
-                .fill(null)
-                .map((_, colIndex) => {
-                  const index = rowIndex * numberOfSquares + colIndex;
-                  return (
-                    <Square
-                      key={index}
-                      value={squares[index]}
-                      onSquareClick={() => handleClick(index)}
-                    ></Square>
-                  );
-                })}
-            </div>
-          );
-        })}
+      {numberOfSquares > 0 &&
+        Array(numberOfSquares)
+          .fill(null)
+          .map((_, rowIndex) => {
+            return (
+              <div key={rowIndex} className="board-row">
+                {Array(numberOfSquares)
+                  .fill(null)
+                  .map((_, colIndex) => {
+                    const index = rowIndex * numberOfSquares + colIndex;
+                    return (
+                      <Square
+                        key={index}
+                        value={squares[index]}
+                        onSquareClick={() => handleClick(index)}
+                      ></Square>
+                    );
+                  })}
+              </div>
+            );
+          })}
     </>
   );
 }
@@ -136,6 +176,7 @@ const calculateWinner = (squares, n) => {
   };
 
   let userWinningLinesCombinations = generateWinningCombinations();
+  console.log(userWinningLinesCombinations);
 
   for (let i = 0; i < userWinningLinesCombinations.length; i++) {
     const [a, b, c, ...rest] = userWinningLinesCombinations[i];
