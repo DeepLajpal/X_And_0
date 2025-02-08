@@ -1,8 +1,13 @@
 import { useState } from "react";
+import "./App.css"; // added import for CSS
 
-const Square = ({ value, onSquareClick }) => {
+// Modify Square component to support highlighting
+const Square = ({ value, onSquareClick, highlight }) => {
   return (
-    <button className="square" onClick={onSquareClick}>
+    <button
+      className={`square ${highlight ? "highlight" : ""}`}
+      onClick={onSquareClick}
+    >
       {value}
     </button>
   );
@@ -31,21 +36,16 @@ export default function Game() {
   };
 
   const moveList = moveHistory.map((squares, move) => {
-    let description;
     const calculatedStep = sortAscending ? move : moveHistory.length - 1 - move;
-    description = `Go to move #${calculatedStep}`;
+    if (calculatedStep <= 0) return null;
     return (
-      <>
-        {calculatedStep <= 0 ? null : (
-          <li key={calculatedStep}>
-            <button onClick={() => goToMove(calculatedStep)}>
-              {calculatedStep === moveHistory.length - 1 && calculatedStep !== 0
-                ? `You are at move #${calculatedStep}`
-                : description}
-            </button>
-          </li>
-        )}
-      </>
+      <li key={calculatedStep}>
+        <button onClick={() => goToMove(calculatedStep)}>
+          {calculatedStep === moveHistory.length - 1 && calculatedStep !== 0
+            ? `You are at move #${calculatedStep}`
+            : `Go to move #${calculatedStep}`}
+        </button>
+      </li>
     );
   });
 
@@ -121,18 +121,17 @@ export default function Game() {
 function Board({ isXTurn, squares, onMove, boardSize }) {
   const currentBoardSize = boardSize;
 
-  const winner = determineWinner(squares, boardSize);
-
+  const result = determineWinner(squares, boardSize);
   let gameStatus = "";
-  if (winner === "X" || winner === "O") {
-    gameStatus = `Winner is: ${winner}`;
+  if (result && result.winner) {
+    gameStatus = `Winner is: ${result.winner}`;
   } else {
     gameStatus = `Next Player: ${isXTurn ? "X" : "O"}`;
   }
 
   const handleSquareClick = (index) => {
     const nextSquares = squares.slice();
-    if (nextSquares[index] || determineWinner(squares, boardSize)) {
+    if (nextSquares[index] || (result && result.winner)) {
       return;
     }
     nextSquares[index] = isXTurn ? "X" : "O";
@@ -157,6 +156,9 @@ function Board({ isXTurn, squares, onMove, boardSize }) {
                         key={squareIndex}
                         value={squares[squareIndex]}
                         onSquareClick={() => handleSquareClick(squareIndex)}
+                        highlight={
+                          result && result.winningLine.includes(squareIndex)
+                        }
                       ></Square>
                     );
                   })}
@@ -192,14 +194,13 @@ const determineWinner = (squares, boardSize) => {
   console.log(winningLines);
 
   for (let i = 0; i < winningLines.length; i++) {
-    const [first, second, third, ...rest] = winningLines[i];
+    const line = winningLines[i];
+    const first = line[0];
     if (
       squares[first] &&
-      squares[first] === squares[second] &&
-      squares[first] === squares[third] &&
-      rest.every((index) => squares[first] === squares[index])
+      line.every((index) => squares[index] === squares[first])
     ) {
-      return squares[first];
+      return { winner: squares[first], winningLine: line };
     }
   }
   return null;
