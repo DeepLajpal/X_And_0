@@ -33,16 +33,19 @@ export default function Game() {
   const moveList = moveHistory.map((squares, move) => {
     let description;
     const calculatedStep = sortAscending ? move : moveHistory.length - 1 - move;
-    description =
-      calculatedStep > 0 ? `Go to move #${calculatedStep}` : `Go to start`;
+    description = `Go to move #${calculatedStep}`;
     return (
-      <li key={calculatedStep}>
-        <button onClick={() => goToMove(calculatedStep)}>
-          {calculatedStep === moveHistory.length - 1 && calculatedStep !== 0
-            ? `You are at move #${calculatedStep}`
-            : description}
-        </button>
-      </li>
+      <>
+        {calculatedStep <= 0 ? null : (
+          <li key={calculatedStep}>
+            <button onClick={() => goToMove(calculatedStep)}>
+              {calculatedStep === moveHistory.length - 1 && calculatedStep !== 0
+                ? `You are at move #${calculatedStep}`
+                : description}
+            </button>
+          </li>
+        )}
+      </>
     );
   });
 
@@ -91,6 +94,9 @@ export default function Game() {
             onChange={() => setSortAscending(!sortAscending)}
           />
         </button>
+        <ol>
+          <button onClick={() => goToMove(0)}>Go to start</button>
+        </ol>
         <ol>{moveList}</ol>
       </div>
       <div className="game-info">
@@ -114,7 +120,9 @@ export default function Game() {
 
 function Board({ isXTurn, squares, onMove, boardSize }) {
   const currentBoardSize = boardSize;
+
   const winner = determineWinner(squares, boardSize);
+
   let gameStatus = "";
   if (winner === "X" || winner === "O") {
     gameStatus = `Winner is: ${winner}`;
