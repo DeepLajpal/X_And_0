@@ -1,7 +1,5 @@
 import { useState } from "react";
-import "./App.css"; // added import for CSS
 
-// Modify Square component to support highlighting
 const Square = ({ value, onSquareClick, highlight }) => {
   return (
     <button
@@ -14,17 +12,23 @@ const Square = ({ value, onSquareClick, highlight }) => {
 };
 
 export default function Game() {
-  const [moveHistory, setMoveHistory] = useState([Array(9).fill(null)]);
+  const [boardSize, setBoardSize] = useState(3);
+  const [moveHistory, setMoveHistory] = useState([
+    Array(boardSize ** 2).fill(null),
+  ]);
+  const [moveHistoryLocations, setMoveHistoryLocations] = useState([
+    Array(boardSize ** 2).fill(null),
+  ]);
   const [activeMove, setActiveMove] = useState(0);
   const currentSquares = moveHistory[activeMove];
-  const [boardSize, setBoardSize] = useState(3);
   const [boardSizeInput, setBoardSizeInput] = useState(boardSize);
   const isXTurn = activeMove % 2 === 0;
   const [sortAscending, setSortAscending] = useState(true);
 
-  const handleMove = (nextSquares) => {
+  const handleMove = (nextSquares, rowIndex, colIndex) => {
     const newHistory = [...moveHistory.slice(0, activeMove + 1), nextSquares];
     setMoveHistory(newHistory);
+    setMoveHistoryLocations((prev) => [...prev, [rowIndex, colIndex]]);
     setActiveMove(newHistory.length - 1);
   };
 
@@ -37,13 +41,15 @@ export default function Game() {
 
   const moveList = moveHistory.map((squares, move) => {
     const calculatedStep = sortAscending ? move : moveHistory.length - 1 - move;
+    const row = moveHistoryLocations[calculatedStep][0] + 1;
+    const column = moveHistoryLocations[calculatedStep][1] + 1;
     if (calculatedStep <= 0) return null;
     return (
       <li key={calculatedStep}>
         <button onClick={() => goToMove(calculatedStep)}>
           {calculatedStep === moveHistory.length - 1 && calculatedStep !== 0
-            ? `You are at move #${calculatedStep}`
-            : `Go to move #${calculatedStep}`}
+            ? `You are at move #${calculatedStep} => row: ${row} column: ${column}`
+            : `Go to move #${calculatedStep} => row: ${row} column: ${column}`}
         </button>
       </li>
     );
@@ -129,13 +135,13 @@ function Board({ isXTurn, squares, onMove, boardSize }) {
     gameStatus = `Next Player: ${isXTurn ? "X" : "O"}`;
   }
 
-  const handleSquareClick = (index) => {
+  const handleSquareClick = (index, rowIndex, colIndex) => {
     const nextSquares = squares.slice();
     if (nextSquares[index] || (result && result.winner)) {
       return;
     }
     nextSquares[index] = isXTurn ? "X" : "O";
-    onMove(nextSquares);
+    onMove(nextSquares, rowIndex, colIndex);
   };
 
   return (
@@ -155,7 +161,9 @@ function Board({ isXTurn, squares, onMove, boardSize }) {
                       <Square
                         key={squareIndex}
                         value={squares[squareIndex]}
-                        onSquareClick={() => handleSquareClick(squareIndex)}
+                        onSquareClick={() =>
+                          handleSquareClick(squareIndex, rowIndex, colIndex)
+                        }
                         highlight={
                           result && result.winningLine.includes(squareIndex)
                         }
