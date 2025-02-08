@@ -13,6 +13,7 @@ export default function Game() {
   const currentSquares = history[currentMove];
   const [squaresInputValue, setSquaresInputValue] = useState(null);
   const xIsNext = currentMove % 2 === 0;
+  const [isAscending, setIsAscending] = useState(true);
   const [n, setN] = useState(3);
 
   const handlePlay = (nextSquares) => {
@@ -29,16 +30,17 @@ export default function Game() {
   };
   const moves = history.map((squares, move) => {
     let description;
-    if (move > 0) {
-      description = `Go to move #${move}`;
+    const moveFinal = isAscending ? move : history.length - 1 - move;
+    if (moveFinal > 0) {
+      description = `Go to move #${moveFinal}`;
     } else {
       description = `Go to start`;
     }
     return (
-      <li key={move}>
-        <button onClick={() => jumpTo(move)}>
-          {move === history.length - 1 && move !== 0
-            ? `You are at move #${move}`
+      <li key={moveFinal}>
+        <button onClick={() => jumpTo(moveFinal)}>
+          {moveFinal === history.length - 1 && moveFinal !== 0
+            ? `You are at move #${moveFinal}`
             : description}
         </button>
       </li>
@@ -79,12 +81,21 @@ export default function Game() {
         />
       </div>
       <div className="game-info">
+        <button onClick={() => setIsAscending(!isAscending)}>
+          <label>Sort moves in ascending order</label>
+          <input
+            type="checkbox"
+            checked={isAscending}
+            onChange={() => setIsAscending(!isAscending)}
+          />
+        </button>
         <ol>{moves}</ol>
       </div>
       <div className="game-info">
         <label>Update number of squares</label>
         <input
           type="number"
+          value={squaresInputValue}
           onChange={(e) => handleOnChange(e)}
           onKeyDown={(e) => handleOnKeyDown(e)}
         />
